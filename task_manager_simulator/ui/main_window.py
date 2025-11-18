@@ -20,9 +20,11 @@ from ..config.settings import settings, APP_NAME, APP_VERSION
 from ..config.constants import UPDATE_INTERVAL_PROCESSES
 from ..core.process_manager import ProcessManager
 from ..core.performance_monitor import PerformanceMonitor
+from ..core.service_manager import ServiceManager
 from .tabs.processes_tab import ProcessesTab
 from .tabs.performance_tab import PerformanceTab
 from .tabs.details_tab import DetailsTab
+from .tabs.services_tab import ServicesTab
 
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,7 @@ class MainWindow(QMainWindow):
         # Managers
         self.process_manager = ProcessManager()
         self.performance_monitor = PerformanceMonitor()
+        self.service_manager = ServiceManager()
 
         # Timer para actualizaciones
         self.update_timer = QTimer()
@@ -95,6 +98,12 @@ class MainWindow(QMainWindow):
         self.details_tab.process_killed.connect(self._on_process_killed)
         self.details_tab.refresh_requested.connect(self.refresh_all)
         self.tab_widget.addTab(self.details_tab, "Details")
+
+        # Pestaña de Servicios (solo en Windows)
+        if settings.is_windows or self.service_manager.is_available:
+            self.services_tab = ServicesTab()
+            self.services_tab.refresh_requested.connect(self.refresh_all)
+            self.tab_widget.addTab(self.services_tab, "Services")
 
     def _init_menu(self):
         """Inicializa el menú de la aplicación."""
@@ -183,6 +192,11 @@ class MainWindow(QMainWindow):
         # Actualizar rendimiento
         performance = self.performance_monitor.get_current_performance()
         self.performance_tab.update_performance(performance)
+
+        # Actualizar servicios (solo en Windows)
+        if hasattr(self, 'services_tab') and self.service_manager.is_available:
+            services = self.service_manager.get_all_services()
+            self.services_tab.update_services(services)
 
         # Actualizar barra de estado
         current_tab = self.tab_widget.currentIndex()
