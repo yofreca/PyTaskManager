@@ -21,6 +21,7 @@ from ...utils.formatters import (
     format_frequency,
     format_duration,
 )
+from ..widgets.performance_chart import PerformanceChart
 
 
 logger = logging.getLogger(__name__)
@@ -108,11 +109,27 @@ class PerformanceTab(QWidget):
         graph_placeholder.setMinimumHeight(150)
         layout.addWidget(graph_placeholder)
 
-        # Guardar referencia
+        # Reemplazar placeholder con gráfico real
         if title == "CPU":
-            self.cpu_graph_area = graph_placeholder
+            # Crear gráfico de CPU
+            self.cpu_chart = PerformanceChart(
+                title="CPU Usage History",
+                max_points=60,
+                y_range=(0, 100)
+            )
+            layout.removeWidget(graph_placeholder)
+            graph_placeholder.deleteLater()
+            layout.insertWidget(2, self.cpu_chart)
         elif title == "Memory":
-            self.memory_graph_area = graph_placeholder
+            # Crear gráfico de Memoria
+            self.memory_chart = PerformanceChart(
+                title="Memory Usage History",
+                max_points=60,
+                y_range=(0, 100)
+            )
+            layout.removeWidget(graph_placeholder)
+            graph_placeholder.deleteLater()
+            layout.insertWidget(2, self.memory_chart)
 
         # Detalles
         details_layout = QVBoxLayout()
@@ -180,6 +197,10 @@ class PerformanceTab(QWidget):
         if len(self.cpu_history) > 60:
             self.cpu_history.pop(0)
 
+        # Actualizar gráfico
+        if hasattr(self, 'cpu_chart'):
+            self.cpu_chart.update_data(cpu.percent)
+
         # Actualizar detalles
         self._update_cpu_details(cpu)
 
@@ -237,6 +258,10 @@ class PerformanceTab(QWidget):
         if len(self.memory_history) > 60:
             self.memory_history.pop(0)
 
+        # Actualizar gráfico
+        if hasattr(self, 'memory_chart'):
+            self.memory_chart.update_data(memory.percent)
+
         # Actualizar detalles
         self._update_memory_details(memory)
 
@@ -286,3 +311,9 @@ class PerformanceTab(QWidget):
         self.memory_history.clear()
         self.cpu_percent_label.setText("0.0%")
         self.memory_percent_label.setText("0.0%")
+
+        # Limpiar gráficos
+        if hasattr(self, 'cpu_chart'):
+            self.cpu_chart.clear()
+        if hasattr(self, 'memory_chart'):
+            self.memory_chart.clear()

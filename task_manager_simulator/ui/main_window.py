@@ -22,6 +22,7 @@ from ..core.process_manager import ProcessManager
 from ..core.performance_monitor import PerformanceMonitor
 from .tabs.processes_tab import ProcessesTab
 from .tabs.performance_tab import PerformanceTab
+from .tabs.details_tab import DetailsTab
 
 
 logger = logging.getLogger(__name__)
@@ -89,15 +90,11 @@ class MainWindow(QMainWindow):
         self.performance_tab = PerformanceTab()
         self.tab_widget.addTab(self.performance_tab, "Performance")
 
-        # Pestaña de Detalles (placeholder por ahora)
-        details_tab = QWidget()
-        details_layout = QVBoxLayout(details_tab)
-        from PyQt6.QtWidgets import QLabel
-        label = QLabel("Details Tab - Coming Soon")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label.setStyleSheet("font-size: 18px; color: gray;")
-        details_layout.addWidget(label)
-        self.tab_widget.addTab(details_tab, "Details")
+        # Pestaña de Detalles
+        self.details_tab = DetailsTab()
+        self.details_tab.process_killed.connect(self._on_process_killed)
+        self.details_tab.refresh_requested.connect(self.refresh_all)
+        self.tab_widget.addTab(self.details_tab, "Details")
 
     def _init_menu(self):
         """Inicializa el menú de la aplicación."""
@@ -179,6 +176,9 @@ class MainWindow(QMainWindow):
             include_system=settings.show_system_processes
         )
         self.processes_tab.update_processes(processes)
+
+        # Actualizar detalles (usa información más detallada)
+        self.details_tab.update_processes(processes)
 
         # Actualizar rendimiento
         performance = self.performance_monitor.get_current_performance()
