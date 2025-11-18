@@ -1,0 +1,27 @@
+# Core system monitoring
+psutil>=5.9.0
+
+# GUI Framework
+PyQt6>=6.4.0
+PyQt6-Qt6>=6.4.0
+
+# Data visualization
+matplotlib>=3.7.0
+pyqtgraph>=0.13.0
+
+# Windows-specific dependencies (optional on other platforms)
+pywin32>=305; sys_platform == 'win32'
+WMI>=1.5.1; sys_platform == 'win32'
+
+# Data models and validation
+pydantic>=2.0.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-qt>=4.2.0
+pytest-cov>=4.1.0
+
+# Code quality
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.4.0
